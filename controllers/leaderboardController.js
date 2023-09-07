@@ -104,12 +104,11 @@ const createNewLbObject = async (data, region) => {
 	};
 
 	// Create new player objects and push them to leaderboard
-	data.forEach((e, i) => {
+	data.forEach((e) => {
 		let score = JSON.parse(BigInt(e?.score) >> 15n);
 		const player = {
 			name: e?.name,
-			rank: i + 1,
-			csRank: e?.rank,
+			rank: e?.rank,
 			score,
 			color: calculateColor(score),
 			position: "unchanged",
