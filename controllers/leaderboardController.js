@@ -104,24 +104,39 @@ const createNewLbObject = async (data, region) => {
 	};
 
 	// Create new player objects and push them to leaderboard
-	data.forEach((e) => {
-		let score = JSON.parse(BigInt(e?.score) >> 15n);
-		const player = {
-			name: e?.name,
-			rank: e?.rank,
-			score,
-			color: calculateColor(score),
-			position: "unchanged",
-			lastUpdate: Date.now(),
-		};
+	for (i = 0; i < data.length; i++) {
+		if (data[i].rank > leaderboard.players.length + 1) {
+			const missingPlayer = {
+				name: "unknown",
+				rank: leaderboard.players.length + 1,
+				score: "?????",
+				color: "#8cc6ff",
+				position: "unchanged",
+				lastUpdate: Date.now(),
+				missing: true,
+			};
+			leaderboard.players.push(missingPlayer);
+			i--;
+		} else {
+			let score = JSON.parse(BigInt(data[i]?.score) >> 15n);
+			const player = {
+				name: data[i]?.name,
+				rank: data[i]?.rank,
+				score,
+				color: calculateColor(score),
+				position: "unchanged",
+				lastUpdate: Date.now(),
+				missing: false,
+			};
 
-		// Update player's position
-		if (oldData && oldData?.players && oldData?.players?.length >= 0) {
-			const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === e.name);
-			if (oldPlayer) updatePlayerPosition(player, oldPlayer);
+			// Update player's position
+			if (oldData && oldData?.players && oldData?.players?.length >= 0) {
+				const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === e.name);
+				if (oldPlayer) updatePlayerPosition(player, oldPlayer);
+			}
+			leaderboard.players.push(player);
 		}
-		leaderboard.players.push(player);
-	});
+	}
 	return leaderboard;
 };
 
