@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const axios = require("axios");
 const fs = require("fs");
 const settings = require("../settings.json");
-const dataValues = require("../database/dataValues.json");
+const dataValues = require("../database/dataValues.json"); // Data version and last update
 
 // Valid regions
 const regions = [
@@ -15,26 +15,32 @@ const regions = [
 	"southamerica",
 	"world",
 ];
-
-// Fetch limit
-let lastFetch = 0;
-const fetchInterval = 10000;
+const fetchInterval = 30000;
 
 const fetchData = async (region) => {
 	let url = `${settings.leaderboardurl}${region !== "world" ? `_${region}` : ""}`;
 	return axios
 		.get(url)
 		.then((response) => {
-			return response.data;
+			if (response.data?.result) return response.data.result;
+			return null;
 		})
 		.catch((err) => {
 			console.log(err);
-			return 404;
+			return null;
 		});
 };
 
-const returnOldData = (res, region) => {
-	console.log("old data");
+const returnOldData = (res, region, updateLastUpdate) => {
+	// Update lastUpdate if we fetched before making this function call
+	// TODO: Remove these console logs from if/else
+	if (updateLastUpdate) {
+		console.log("old data");
+		dataValues[region].lastUpdate = Date.now();
+		updateFile("dataValues", dataValues);
+	} else console.log("too often");
+
+	// Return old data
 	fs.readFile(`./database/${region}.json`, "utf8", (err, oldData) => {
 		if (err) {
 			console.log(err);
@@ -44,27 +50,103 @@ const returnOldData = (res, region) => {
 	});
 };
 
+const updateFile = (file, data) => {
+	fs.writeFileSync(`./database/${file}.json`, JSON.stringify(data, null, 4), (err) => {
+		if (err) console.log(err);
+		console.log("updated file");
+	});
+};
+
+const updatePlayerPosition = (player, oldPlayer) => {
+	if (player.rank < oldPlayer.rank) {
+		player.position = "up";
+		player.lastUpdate = Date.now();
+	} else if (player.rank > oldPlayer.rank) {
+		player.position = "down";
+		player.lastUpdate = Date.now();
+	}
+	// If player hasn't moved in 12 hours (43200000), set position to "unchanged"
+	else if (player.position !== "unchanged" && player.lastUpdate + 43200000 <= Date.now()) {
+		player.position = "unchanged";
+	} else {
+		player.position = oldPlayer.position;
+		player.lastUpdate = oldPlayer.lastUpdate;
+	}
+};
+
+const createNewLbObject = async (data, region) => {
+	// Read old data for setting players position
+	const oldData = JSON.parse(
+		fs.readFileSync(`./database/${region}.json`, "utf8", (err, data) => {
+			if (err) {
+				console.log(err);
+				return null;
+			}
+			return data;
+		})
+	);
+
+	// Create new leaderboard object
+	const leaderboard = {
+		updateTime: Date.now(),
+		region,
+		players: [],
+	};
+
+	// Create new player objects and push them to leaderboard
+	data.forEach((e, i) => {
+		const player = {
+			rank: i + 1,
+			csRank: e?.rank,
+			score: JSON.parse(BigInt(e?.score) >> 15n),
+			name: e?.name,
+			position: "unchanged",
+			lastUpdate: Date.now(),
+		};
+
+		// Update player's position
+		if (oldData && oldData?.players && oldData?.players?.length >= 0) {
+			const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === e.name);
+			if (oldPlayer) updatePlayerPosition(player, oldPlayer);
+		}
+		leaderboard.players.push(player);
+	});
+	return leaderboard;
+};
+
 // @desc    Get region leaderboard
 // @route   GET /api/leaderboard/:region
 const getLeaderboard = asyncHandler(async (req, res) => {
 	// Check for valid region
 	let region = req.params.region;
 	if (!regions.includes(region))
-		return res.status(400).json(`ERROR: ${region} is not a valid region!`);
+		return res.status(400).json(`ERROR: "${region}" is not a valid region!`);
 
 	// If fetching too often serve old data
-	if (lastFetch + fetchInterval >= Date.now()) return returnOldData(res, region);
-	lastFetch = Date.now(); // Update last fetch value and continue fetching
+	if (dataValues[region].lastUpdate + fetchInterval >= Date.now()) {
+		return returnOldData(res, region);
+	}
 
-	let data = await fetchData(region);
-	console.log("new: " + data.result.data + " old: " + dataValues[region]);
-	// Old data
-	if (data.result.data === dataValues[region]) return returnOldData(res, region);
+	// Fetch new data
+	let lbData = await fetchData(region);
+	if (!lbData) return res.status(404);
+
+	// If same data, serve old data, else update old json with new data
+	if (lbData?.data === dataValues[region].value) return returnOldData(res, region, true);
+	if (!lbData?.entries) return returnOldData(res, region, true);
 	console.log("new data");
-	// Update dataValues
-	// Add correct position, but keep the raw position as well
-	// Check if player has risen or fallen and how much
-	// New players dont get an arrow cause they can just change name
+
+	// Update regions value and lastUpdate
+	dataValues[region].value = lbData?.data;
+	dataValues[region].lastUpdate = Date.now();
+	updateFile("dataValues", dataValues);
+
+	// Create new leaderboard object
+	const newData = await createNewLbObject(lbData?.entries, region);
+	updateFile(region, newData);
+
+	if (newData) return res.status(200).json(newData);
+	else returnOldData(res, region, true);
 });
 
 module.exports = { getLeaderboard };
