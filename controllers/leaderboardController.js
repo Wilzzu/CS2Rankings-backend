@@ -74,6 +74,16 @@ const updatePlayerPosition = (player, oldPlayer) => {
 	}
 };
 
+const calculateColor = (score) => {
+	if (score >= 5000 && score < 10000) return "#8cc6ff";
+	if (score >= 10000 && score < 15000) return "#6a7dff";
+	if (score >= 15000 && score < 20000) return "#c166ff";
+	if (score >= 20000 && score < 25000) return "#f03cff";
+	if (score >= 25000 && score < 30000) return "#eb4b4b";
+	if (score >= 30000) return "#ffd700";
+	else return "#b0c3d9";
+};
+
 const createNewLbObject = async (data, region) => {
 	// Read old data for setting players position
 	const oldData = JSON.parse(
@@ -95,11 +105,13 @@ const createNewLbObject = async (data, region) => {
 
 	// Create new player objects and push them to leaderboard
 	data.forEach((e, i) => {
+		let score = JSON.parse(BigInt(e?.score) >> 15n);
 		const player = {
+			name: e?.name,
 			rank: i + 1,
 			csRank: e?.rank,
-			score: JSON.parse(BigInt(e?.score) >> 15n),
-			name: e?.name,
+			score,
+			color: calculateColor(score),
 			position: "unchanged",
 			lastUpdate: Date.now(),
 		};
