@@ -84,6 +84,15 @@ const calculateColor = (score) => {
 	else return "#b0c3d9";
 };
 
+function addCommas(score) {
+	let split = score
+		.toString()
+		.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+		.split(",");
+	if (split.length <= 1) return { big: split[0], small: "" };
+	return { big: split[0], small: split[1] };
+}
+
 const createNewLbObject = async (data, region) => {
 	// Read old data for setting players position
 	const oldData = JSON.parse(
@@ -107,7 +116,7 @@ const createNewLbObject = async (data, region) => {
 	for (i = 0; i < data.length; i++) {
 		if (data[i].rank > leaderboard.players.length + 1) {
 			const missingPlayer = {
-				name: "unknown",
+				name: "Unknown player",
 				rank: leaderboard.players.length + 1,
 				score: "?????",
 				color: "#8cc6ff",
@@ -123,6 +132,7 @@ const createNewLbObject = async (data, region) => {
 				name: data[i]?.name,
 				rank: data[i]?.rank,
 				score,
+				formattedScore: addCommas(score),
 				color: calculateColor(score),
 				position: "unchanged",
 				lastUpdate: Date.now(),
@@ -131,7 +141,7 @@ const createNewLbObject = async (data, region) => {
 
 			// Update player's position
 			if (oldData && oldData?.players && oldData?.players?.length >= 0) {
-				const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === e.name);
+				const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === data[i]?.name);
 				if (oldPlayer) updatePlayerPosition(player, oldPlayer);
 			}
 			leaderboard.players.push(player);
