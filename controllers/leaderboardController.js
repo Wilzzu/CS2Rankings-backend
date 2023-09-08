@@ -84,11 +84,11 @@ const calculateColor = (score) => {
 	else return "#b0c3d9";
 };
 
-function addCommas(score) {
+function thousandSeparator(score) {
 	let split = score
 		.toString()
-		.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-		.split(",");
+		.replace(/\B(?=(\d{3})+(?!\d))/g, "|")
+		.split("|");
 	if (split.length <= 1) return { big: split[0], small: "" };
 	return { big: split[0], small: split[1] };
 }
@@ -132,7 +132,7 @@ const createNewLbObject = async (data, region) => {
 				name: data[i]?.name,
 				rank: data[i]?.rank,
 				score,
-				formattedScore: addCommas(score),
+				formattedScore: thousandSeparator(score),
 				color: calculateColor(score),
 				position: "unchanged",
 				lastUpdate: Date.now(),
