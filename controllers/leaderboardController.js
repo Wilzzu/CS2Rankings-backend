@@ -16,6 +16,19 @@ const regions = [
 	"southamerica",
 	"world",
 ];
+
+// Regions cache
+const cache = {
+	africa: {},
+	asia: {},
+	australia: {},
+	china: {},
+	europe: {},
+	northamerica: {},
+	southamerica: {},
+	world: {},
+};
+
 const fetchInterval = 30000;
 
 const fetchData = async (region) => {
@@ -30,25 +43,6 @@ const fetchData = async (region) => {
 			console.log(err);
 			return null;
 		});
-};
-
-const returnOldData = (res, region, updateLastUpdate) => {
-	// Update lastUpdate if we fetched before making this function call
-	// TODO: Remove these console logs from if/else
-	if (updateLastUpdate) {
-		console.log("old data");
-		dataValues[region].lastUpdate = Date.now();
-		updateFile("dataValues", dataValues);
-	} else console.log("too often");
-
-	// Return old data
-	fs.readFile(`./database/${region}.json`, "utf8", (err, oldData) => {
-		if (err) {
-			console.log(err);
-			return res.status(404);
-		}
-		return res.status(200).json(JSON.parse(oldData));
-	});
 };
 
 const updateFile = (file, data) => {
@@ -66,7 +60,7 @@ const updatePlayerPosition = (player, oldPlayer) => {
 		player.position = "down";
 		player.lastUpdate = Date.now();
 	}
-	// If player hasn't moved in 12 hours (21600000), set position to "unchanged"
+	// If player hasn't moved in 6 hours (21600000), set position to "unchanged"
 	else if (player.position !== "unchanged" && player.lastUpdate + 21600000 <= Date.now()) {
 		player.position = "unchanged";
 	} else {
@@ -153,6 +147,24 @@ const createNewLbObject = async (data, region) => {
 	return leaderboard;
 };
 
+const mainFetch = async (region) => {
+	let lbData = await fetchData(region);
+	// Validate data
+	if (!lbData) return;
+	if (lbData?.data === dataValues[region]) return;
+	if (!lbData?.entries) return;
+
+	console.log("new data: " + region + " " + lbData?.data);
+	// Update regions data value
+	dataValues[region] = lbData?.data;
+	updateFile("dataValues", dataValues);
+
+	// Create new lb object and write it to a file and cache
+	const newData = await createNewLbObject(lbData?.entries, region);
+	updateFile(region, newData);
+	cache[region] = newData;
+};
+
 // @desc    Get region leaderboard
 // @route   GET /api/leaderboard/:region
 const getLeaderboard = asyncHandler(async (req, res) => {
@@ -161,31 +173,22 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 	if (!regions.includes(region))
 		return res.status(400).json(`ERROR: "${region}" is not a valid region!`);
 
-	// If fetching too often serve old data
-	if (dataValues[region].lastUpdate + fetchInterval >= Date.now()) {
-		return returnOldData(res, region);
-	}
-
-	// Fetch new data
-	let lbData = await fetchData(region);
-	if (!lbData) return res.status(404);
-
-	// If same data, serve old data, else update old json with new data
-	if (lbData?.data === dataValues[region].value) return returnOldData(res, region, true);
-	if (!lbData?.entries) return returnOldData(res, region, true);
-	console.log("new data");
-
-	// Update regions value and lastUpdate
-	dataValues[region].value = lbData?.data;
-	dataValues[region].lastUpdate = Date.now();
-	updateFile("dataValues", dataValues);
-
-	// Create new leaderboard object
-	const newData = await createNewLbObject(lbData?.entries, region);
-	updateFile(region, newData);
-
-	if (newData) return res.status(200).json(newData);
-	else returnOldData(res, region, true);
+	if (!cache[region]) return res.status(404).json(`ERROR: "${region}" has no data!`);
+	return res.status(200).json(cache[region]);
 });
+
+const start = () => {
+	regions.forEach(async (region) => {
+		await mainFetch(region);
+	});
+
+	setInterval(() => {
+		regions.forEach(async (region) => {
+			await mainFetch(region);
+		});
+	}, fetchInterval);
+};
+
+start();
 
 module.exports = { getLeaderboard };
