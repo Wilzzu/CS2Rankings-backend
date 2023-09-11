@@ -3,6 +3,7 @@ const axios = require("axios");
 const fs = require("fs");
 const settings = require("../settings.json");
 const dataValues = require("../database/dataValues.json"); // Data version and last update
+const { v4: uuidv4 } = require("uuid");
 
 // Valid regions
 const regions = [
@@ -65,8 +66,8 @@ const updatePlayerPosition = (player, oldPlayer) => {
 		player.position = "down";
 		player.lastUpdate = Date.now();
 	}
-	// If player hasn't moved in 12 hours (43200000), set position to "unchanged"
-	else if (player.position !== "unchanged" && player.lastUpdate + 43200000 <= Date.now()) {
+	// If player hasn't moved in 12 hours (21600000), set position to "unchanged"
+	else if (player.position !== "unchanged" && player.lastUpdate + 21600000 <= Date.now()) {
 		player.position = "unchanged";
 	} else {
 		player.position = oldPlayer.position;
@@ -74,14 +75,14 @@ const updatePlayerPosition = (player, oldPlayer) => {
 	}
 };
 
-const calculateColor = (score) => {
-	if (score >= 5000 && score < 10000) return "#8cc6ff";
-	if (score >= 10000 && score < 15000) return "#6a7dff";
-	if (score >= 15000 && score < 20000) return "#c166ff";
-	if (score >= 20000 && score < 25000) return "#f03cff";
-	if (score >= 25000 && score < 30000) return "#eb4b4b";
-	if (score >= 30000) return "#ffd700";
-	else return "#b0c3d9";
+const calculateTier = (score) => {
+	if (score >= 5000 && score < 10000) return "tier1";
+	if (score >= 10000 && score < 15000) return "tier2";
+	if (score >= 15000 && score < 20000) return "tier3";
+	if (score >= 20000 && score < 25000) return "tier4";
+	if (score >= 25000 && score < 30000) return "tier5";
+	if (score >= 30000) return "tier6";
+	else return "tier0";
 };
 
 function thousandSeparator(score) {
@@ -116,10 +117,11 @@ const createNewLbObject = async (data, region) => {
 	for (i = 0; i < data.length; i++) {
 		if (data[i].rank > leaderboard.players.length + 1) {
 			const missingPlayer = {
+				id: uuidv4(),
 				name: "Unknown player",
 				rank: leaderboard.players.length + 1,
 				score: "?????",
-				color: "#8cc6ff",
+				tier: "tier0",
 				position: "unchanged",
 				lastUpdate: Date.now(),
 				missing: true,
@@ -129,11 +131,12 @@ const createNewLbObject = async (data, region) => {
 		} else {
 			let score = JSON.parse(BigInt(data[i]?.score) >> 15n);
 			const player = {
+				id: uuidv4(),
 				name: data[i]?.name,
 				rank: data[i]?.rank,
 				score,
 				formattedScore: thousandSeparator(score),
-				color: calculateColor(score),
+				tier: calculateTier(score),
 				position: "unchanged",
 				lastUpdate: Date.now(),
 				missing: false,
