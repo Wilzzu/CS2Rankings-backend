@@ -60,13 +60,13 @@ const updatePlayerPosition = (player, oldPlayer) => {
 };
 
 const calculateTier = (score) => {
-	if (score >= 5000 && score < 10000) return "tier1";
-	if (score >= 10000 && score < 15000) return "tier2";
-	if (score >= 15000 && score < 20000) return "tier3";
-	if (score >= 20000 && score < 25000) return "tier4";
-	if (score >= 25000 && score < 30000) return "tier5";
-	if (score >= 30000) return "tier6";
-	else return "tier0";
+	if (score >= 5000 && score < 10000) return 1;
+	if (score >= 10000 && score < 15000) return 2;
+	if (score >= 15000 && score < 20000) return 3;
+	if (score >= 20000 && score < 25000) return 4;
+	if (score >= 25000 && score < 30000) return 5;
+	if (score >= 30000) return 6;
+	else return 0;
 };
 
 function thousandSeparator(score) {
@@ -105,7 +105,7 @@ const createNewLbObject = async (data, region) => {
 				name: "Unknown player",
 				rank: leaderboard.players.length + 1,
 				score: "?????",
-				tier: "tier0",
+				tier: 0,
 				position: "unchanged",
 				lastUpdate: Date.now(),
 				missing: true,
@@ -158,7 +158,7 @@ const mainFetch = async (region, force) => {
 };
 
 // @desc    Get region leaderboard
-// @route   GET /api/leaderboard/:region
+// @route   GET /api/leaderboard/:season/:region
 const getLeaderboard = asyncHandler(async (req, res) => {
 	console.log("new request: " + req.params.region);
 	// Check for valid region
