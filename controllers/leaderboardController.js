@@ -5,18 +5,6 @@ const settings = require("../settings.json");
 const dataValues = require("../database/dataValues.json"); // Data version and last update
 const { v4: uuidv4 } = require("uuid");
 
-// Valid regions
-const regions = [
-	"africa",
-	"asia",
-	"australia",
-	"china",
-	"europe",
-	"northamerica",
-	"southamerica",
-	"world",
-];
-
 // Regions cache
 const cache = {
 	africa: {},
@@ -32,7 +20,9 @@ const cache = {
 const fetchInterval = 30000;
 
 const fetchData = async (region) => {
-	let url = `${settings.leaderboardurl}${region !== "world" ? `_${region}` : ""}`;
+	let url = `${settings.leaderboardurl}_${settings.currentSeason}${
+		region !== "world" ? `_${region}` : ""
+	}`;
 	return axios
 		.get(url)
 		.then((response) => {
@@ -147,12 +137,14 @@ const createNewLbObject = async (data, region) => {
 	return leaderboard;
 };
 
-const mainFetch = async (region) => {
+const mainFetch = async (region, force) => {
 	let lbData = await fetchData(region);
 	// Validate data
-	if (!lbData) return;
-	if (lbData?.data === dataValues[region]) return;
-	if (!lbData?.entries) return;
+	if (!force) {
+		if (!lbData) return;
+		if (lbData?.data === dataValues[region]) return;
+		if (!lbData?.entries) return;
+	}
 
 	console.log("new data: " + region + " " + lbData?.data);
 	// Update regions data value
@@ -168,24 +160,31 @@ const mainFetch = async (region) => {
 // @desc    Get region leaderboard
 // @route   GET /api/leaderboard/:region
 const getLeaderboard = asyncHandler(async (req, res) => {
+	console.log("new request: " + req.params.region);
 	// Check for valid region
 	let region = req.params.region;
-	if (!regions.includes(region))
+	if (!settings.regions.includes(region))
 		return res.status(400).json(`ERROR: "${region}" is not a valid region!`);
+	let season = req.params.season;
+	if (!settings.seasons.includes(season))
+		return res.status(400).json(`ERROR: "${season}" is not a valid season!`);
 
 	if (!cache[region]) return res.status(404).json(`ERROR: "${region}" has no data!`);
-	return res.status(200).json(cache[region]);
+
+	// Return cache or old season data
+	if (season !== settings.currentSeason) console.log("Serve old season");
+	else return res.status(200).json(cache[region]);
 });
 
-const start = () => {
-	regions.forEach(async (region) => {
-		await mainFetch(region);
-	});
+const start = async () => {
+	for (const region of settings.regions) {
+		await mainFetch(region, true);
+	}
 
-	setInterval(() => {
-		regions.forEach(async (region) => {
+	setInterval(async () => {
+		for (const region of settings.regions) {
 			await mainFetch(region);
-		});
+		}
 	}, fetchInterval);
 };
 

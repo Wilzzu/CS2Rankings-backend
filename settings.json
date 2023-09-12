@@ -1,3 +1,15 @@
 {
-	"leaderboardurl": "https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/?lbname=official_leaderboard_premier_season1"
+	"leaderboardurl": "https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/?lbname=official_leaderboard_premier",
+	"regions": [
+		"africa",
+		"asia",
+		"australia",
+		"china",
+		"europe",
+		"northamerica",
+		"southamerica",
+		"world"
+	],
+	"seasons": ["season1"],
+	"currentSeason": "season1"
 }
