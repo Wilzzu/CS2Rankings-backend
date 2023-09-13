@@ -17,7 +17,7 @@ const cache = {
 	world: {},
 };
 
-const fetchInterval = 30000;
+const fetchInterval = 20000;
 
 const fetchData = async (region) => {
 	let url = `${settings.leaderboardurl}_${settings.currentSeason}${
@@ -50,8 +50,8 @@ const updatePlayerPosition = (player, oldPlayer) => {
 		player.position = "down";
 		player.lastUpdate = Date.now();
 	}
-	// If player hasn't moved in 6 hours (21600000), set position to "unchanged"
-	else if (player.position !== "unchanged" && player.lastUpdate + 21600000 <= Date.now()) {
+	// If player hasn't moved in 4 hours (14400000ms), set position to "unchanged"
+	else if (oldPlayer.position !== "unchanged" && oldPlayer.lastUpdate + 14400000 <= Date.now()) {
 		player.position = "unchanged";
 	} else {
 		player.position = oldPlayer.position;
