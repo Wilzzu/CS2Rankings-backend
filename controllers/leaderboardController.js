@@ -43,17 +43,22 @@ const updateFile = (file, data) => {
 };
 
 const updatePlayerPosition = (player, oldPlayer) => {
-	if (player.rank < oldPlayer.rank) {
+	// If rank up and (score changed or top 11)
+	if (player.rank < oldPlayer.rank && (player.rank <= 11 || player.score > oldPlayer.score)) {
 		player.position = "up";
 		player.lastUpdate = Date.now();
-	} else if (player.rank > oldPlayer.rank) {
+	}
+	// If rank down and (score changed or top 11)
+	else if (player.rank > oldPlayer.rank && (player.rank <= 11 || player.score < oldPlayer.score)) {
 		player.position = "down";
 		player.lastUpdate = Date.now();
 	}
 	// If player hasn't moved in 4 hours (14400000ms), set position to "unchanged"
 	else if (oldPlayer.position !== "unchanged" && oldPlayer.lastUpdate + 14400000 <= Date.now()) {
 		player.position = "unchanged";
-	} else {
+	}
+	// Else just keep the same position and date
+	else {
 		player.position = oldPlayer.position;
 		player.lastUpdate = oldPlayer.lastUpdate;
 	}
