@@ -4,6 +4,16 @@ const fs = require("fs");
 const settings = require("../settings.json");
 const dataValues = require("../database/dataValues.json"); // Data version and last update
 const { v4: uuidv4 } = require("uuid");
+const History = require("../database/models/history");
+const CronJob = require("cron").CronJob;
+// require("dotenv").config();
+
+// // Connect to MongoDB
+// const dbURL = `mongodb+srv://wilzzu:${process.env.MONGOPASS}@rankings.7vlhij2.mongodb.net/playerdata?retryWrites=true&w=majority`;
+// mongoose
+// 	.connect(dbURL)
+// 	.then((res) => console.log("Connected to database!"))
+// 	.catch((err) => console.log(err));
 
 // Regions cache
 const cache = {
@@ -181,16 +191,62 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 	else return res.status(200).json(cache[region]);
 });
 
+// Update player history
+const updateHistory = async (players) => {
+	try {
+		const bulkUpdateOperations = players.map((player) => ({
+			updateOne: {
+				filter: { name: player.name },
+				update: { $push: { history: player.history } },
+				upsert: true,
+			},
+		}));
+
+		await History.bulkWrite(bulkUpdateOperations);
+		console.log(`Updated history for all players @ ${new Date().toUTCString()}`);
+	} catch (error) {
+		console.error(`Error updating players: ${error.message}`);
+	}
+};
+
+// Start script
 const start = async () => {
 	for (const region of settings.regions) {
 		await mainFetch(region, true);
 	}
 
+	// Leaderboard updating
 	setInterval(async () => {
 		for (const region of settings.regions) {
 			await mainFetch(region);
 		}
 	}, fetchInterval);
+
+	// History updating 59 23 * * *
+	const job = new CronJob(
+		"59 23 * * *",
+		function () {
+			const playerHistoryData = [];
+			const date = new Date().toISOString();
+			cache.world.players.forEach((player) => {
+				if (player.missing) return;
+				playerHistoryData.push({
+					name: player.name,
+					history: [
+						{
+							date,
+							rank: player.rank,
+							score: player.score,
+						},
+					],
+				});
+			});
+			updateHistory(playerHistoryData);
+		},
+		null,
+		true,
+		"UTC"
+	);
 };
 
 start();
