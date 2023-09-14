@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.get("/api/leaderboard/:season/:region", getLeaderboard);
 app.get("/api/history/:name", (req, res) => {
-	History.findOne({ name: new RegExp("^" + req.params.name + "$", "i") })
+	History.findOne({ name: encodeURIComponent(req.params.name) })
 		.then((docs) => res.status(200).json(docs))
 		.catch((err) => console.log(err));
 });
