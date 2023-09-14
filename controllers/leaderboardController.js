@@ -231,7 +231,7 @@ const start = async () => {
 			cache.world.players.forEach((player) => {
 				if (player.missing) return;
 				playerHistoryData.push({
-					name: player.name,
+					name: encodeURIComponent(player.name),
 					history: [
 						{
 							date,
