@@ -6,14 +6,6 @@ const dataValues = require("../database/dataValues.json"); // Data version and l
 const { v4: uuidv4 } = require("uuid");
 const History = require("../database/models/history");
 const CronJob = require("cron").CronJob;
-// require("dotenv").config();
-
-// // Connect to MongoDB
-// const dbURL = `mongodb+srv://wilzzu:${process.env.MONGOPASS}@rankings.7vlhij2.mongodb.net/playerdata?retryWrites=true&w=majority`;
-// mongoose
-// 	.connect(dbURL)
-// 	.then((res) => console.log("Connected to database!"))
-// 	.catch((err) => console.log(err));
 
 // Regions cache
 const cache = {
@@ -97,15 +89,7 @@ function thousandSeparator(score) {
 
 const createNewLbObject = async (data, region) => {
 	// Read old data for setting players position
-	const oldData = JSON.parse(
-		fs.readFileSync(`./database/${region}.json`, "utf8", (err, data) => {
-			if (err) {
-				console.log(err);
-				return null;
-			}
-			return data;
-		})
-	);
+	const oldData = cache[region];
 
 	// Create new leaderboard object
 	const leaderboard = {
