@@ -6,6 +6,8 @@ const dataValues = require("../database/dataValues.json"); // Data version and l
 const { v4: uuidv4 } = require("uuid");
 const History = require("../database/models/history");
 const CronJob = require("cron").CronJob;
+require("dotenv").config();
+const CryptoJS = require("crypto-js");
 
 // Regions cache
 const cache = {
@@ -174,7 +176,13 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 
 	// Return cache or old season data
 	if (season !== settings.currentSeason) console.log("Serve old season");
-	else return res.status(200).json(cache[region]);
+	else {
+		const encryptData = CryptoJS.AES.encrypt(
+			JSON.stringify(cache[region]),
+			process.env.ENCRYPT
+		).toString();
+		res.status(200).json(encryptData);
+	}
 });
 
 // Update player history

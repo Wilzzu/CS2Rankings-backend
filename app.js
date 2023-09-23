@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const History = require("./database/models/history");
+const CryptoJS = require("crypto-js");
 
 const { getLeaderboard } = require("./controllers/leaderboardController");
 
@@ -22,7 +23,13 @@ app.use(express.urlencoded({ extended: false }));
 app.get("/api/leaderboard/:season/:region", getLeaderboard);
 app.get("/api/history/:name", (req, res) => {
 	History.findOne({ name: encodeURIComponent(req.params.name) })
-		.then((docs) => res.status(200).json(docs))
+		.then((docs) => {
+			const encryptData = CryptoJS.AES.encrypt(
+				JSON.stringify(docs),
+				process.env.ENCRYPT
+			).toString();
+			return res.status(200).json(encryptData);
+		})
 		.catch((err) => console.log(err));
 });
 
