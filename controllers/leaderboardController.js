@@ -4,7 +4,6 @@ const fs = require("fs");
 const settings = require("../settings.json");
 const dataValues = require("../database/dataValues.json"); // Data version and last update
 const { v4: uuidv4 } = require("uuid");
-const History = require("../database/models/history");
 const CronJob = require("cron").CronJob;
 require("dotenv").config();
 const CryptoJS = require("crypto-js");

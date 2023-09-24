@@ -2,10 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
-const History = require("./database/models/history");
-const CryptoJS = require("crypto-js");
 
 const { getLeaderboard } = require("./controllers/leaderboardController");
+const { getHistory } = require("./controllers/historyController");
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -21,16 +20,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get("/api/leaderboard/:season/:region", getLeaderboard);
-app.get("/api/history/:name", (req, res) => {
-	History.findOne({ name: encodeURIComponent(req.params.name) })
-		.then((docs) => {
-			const encryptData = CryptoJS.AES.encrypt(
-				JSON.stringify(docs),
-				process.env.ENCRYPT
-			).toString();
-			return res.status(200).json(encryptData);
-		})
-		.catch((err) => console.log(err));
-});
+app.get("/api/history/:name", getHistory);
 
 app.listen(port, () => console.log(`Server started on port ${port}`));
