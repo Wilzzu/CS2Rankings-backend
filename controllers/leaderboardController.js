@@ -149,7 +149,7 @@ const mainFetch = async (region, force) => {
 		if (!lbData?.entries) return;
 	}
 
-	console.log("new data: " + region + " " + lbData?.data);
+	// console.log("new data: " + region + " " + lbData?.data);
 	// Update regions data value
 	dataValues[region] = lbData?.data;
 	updateFile("dataValues", dataValues);
@@ -163,7 +163,11 @@ const mainFetch = async (region, force) => {
 // @desc    Get region leaderboard
 // @route   GET /api/leaderboard/:season/:region
 const getLeaderboard = asyncHandler(async (req, res) => {
-	console.log("new request: " + req.params.region);
+	console.log(
+		"New request: " +
+			req.params.region +
+			` @ ${new Date().getUTCHours()}:${new Date().getUTCMinutes()}:${new Date().getUTCSeconds()}`
+	);
 	// Check for valid region
 	let region = req.params.region;
 	if (!settings.regions.includes(region))
@@ -220,6 +224,8 @@ const start = async () => {
 	const job = new CronJob(
 		"59 23 * * *",
 		function () {
+			if (process.env.DEV) return;
+
 			const playerHistoryData = [];
 			const date = new Date().toISOString();
 			cache.world.players.forEach((player) => {
