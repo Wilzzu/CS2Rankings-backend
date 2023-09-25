@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 const CronJob = require("cron").CronJob;
 require("dotenv").config();
 const CryptoJS = require("crypto-js");
+const History = require("../database/models/history");
 
 // Regions cache
 const cache = {
