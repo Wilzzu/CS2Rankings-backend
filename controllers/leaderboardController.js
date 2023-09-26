@@ -213,6 +213,8 @@ const start = async () => {
 		await mainFetch(region, true);
 	}
 
+	console.log(`DEV MODE IS ${settings.dev ? "ON!!!" : "NOT ON!!!"}`);
+
 	// Leaderboard updating
 	setInterval(async () => {
 		for (const region of settings.regions) {
