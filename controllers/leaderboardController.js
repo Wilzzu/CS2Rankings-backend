@@ -224,7 +224,7 @@ const start = async () => {
 	const job = new CronJob(
 		"59 23 * * *",
 		function () {
-			if (process.env.DEV) return;
+			if (settings.dev) return;
 
 			const playerHistoryData = [];
 			const date = new Date().toISOString();

@@ -11,5 +11,6 @@
 		"world"
 	],
 	"seasons": ["season1"],
-	"currentSeason": "season1"
+	"currentSeason": "season1",
+	"dev": false
 }
