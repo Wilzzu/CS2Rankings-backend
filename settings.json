@@ -10,7 +10,7 @@
 		"southamerica",
 		"world"
 	],
-	"seasons": ["season1"],
+	"seasons": ["beta", "season1"],
 	"currentSeason": "season1",
 	"dev": false
 }
