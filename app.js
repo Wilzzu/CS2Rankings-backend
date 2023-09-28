@@ -20,6 +20,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get("/api/leaderboard/:season/:region", getLeaderboard);
-app.get("/api/history/:name", getHistory);
+app.get("/api/history/:season/:name", getHistory);
 
 app.listen(port, () => console.log(`Server started on port ${port}`));

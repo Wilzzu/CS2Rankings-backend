@@ -23,6 +23,19 @@ const cache = {
 
 const fetchInterval = 20000;
 
+const readOldSeasons = (res, season, region) => {
+	fs.readFile(`./database/oldSeasons/${season}/${region}.json`, "utf8", (err, data) => {
+		if (err) {
+			return res.status(404).json(`ERROR: failed to read data for "${season}" season!`);
+		}
+		const encryptData = CryptoJS.AES.encrypt(
+			JSON.stringify(JSON.parse(data)),
+			process.env.ENCRYPT
+		).toString();
+		res.status(200).json(encryptData);
+	});
+};
+
 const fetchData = async (region) => {
 	let url = `${settings.leaderboardurl}_${settings.currentSeason}${
 		region !== "world" ? `_${region}` : ""
@@ -179,8 +192,9 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 	if (!cache[region]) return res.status(404).json(`ERROR: "${region}" has no data!`);
 
 	// Return cache or old season data
-	if (season !== settings.currentSeason) console.log("Serve old season");
-	else {
+	if (season !== settings.currentSeason) {
+		readOldSeasons(res, season, region);
+	} else {
 		const encryptData = CryptoJS.AES.encrypt(
 			JSON.stringify(cache[region]),
 			process.env.ENCRYPT
