@@ -8,6 +8,7 @@ const CronJob = require("cron").CronJob;
 require("dotenv").config();
 const CryptoJS = require("crypto-js");
 const History = require("../database/models/history");
+const { proto } = require("../utils/proto");
 
 // Regions cache
 const cache = {
@@ -21,7 +22,7 @@ const cache = {
 	world: {},
 };
 
-const fetchInterval = 20000;
+const fetchInterval = 30000;
 
 const readOldSeasons = (res, season, region) => {
 	fs.readFile(`./database/oldSeasons/${season}/${region}.json`, "utf8", (err, data) => {
@@ -114,8 +115,9 @@ const createNewLbObject = async (data, region) => {
 	};
 
 	// Create new player objects and push them to leaderboard
-	for (i = 0; i < data.length; i++) {
-		if (data[i].rank > leaderboard.players.length + 1) {
+	for (const player of data) {
+		// Keep adding missing players until player is at correct position
+		while (player?.rank > leaderboard.players.length + 1) {
 			const missingPlayer = {
 				id: uuidv4(),
 				name: "Unknown player",
@@ -125,30 +127,32 @@ const createNewLbObject = async (data, region) => {
 				position: "unchanged",
 				lastUpdate: Date.now(),
 				missing: true,
+				detailData: {},
 			};
 			leaderboard.players.push(missingPlayer);
-			i--;
-		} else {
-			let score = JSON.parse(BigInt(data[i]?.score) >> 15n);
-			const player = {
-				id: uuidv4(),
-				name: data[i]?.name,
-				rank: data[i]?.rank,
-				score,
-				formattedScore: thousandSeparator(score),
-				tier: calculateTier(score),
-				position: "unchanged",
-				lastUpdate: Date.now(),
-				missing: false,
-			};
-
-			// Update player's position
-			if (oldData && oldData?.players && oldData?.players?.length >= 0) {
-				const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === data[i]?.name);
-				if (oldPlayer) updatePlayerPosition(player, oldPlayer);
-			}
-			leaderboard.players.push(player);
 		}
+
+		// Create new player object
+		let score = JSON.parse(BigInt(player?.score) >> 15n);
+		const playerObj = {
+			id: uuidv4(),
+			name: player?.name,
+			rank: player?.rank,
+			score,
+			formattedScore: thousandSeparator(score),
+			tier: calculateTier(score),
+			position: "unchanged",
+			lastUpdate: Date.now(),
+			missing: false,
+			detailData: await proto(player?.detailData),
+		};
+
+		// Update player's position
+		if (oldData && oldData?.players && oldData?.players?.length >= 0) {
+			const oldPlayer = oldData?.players.find((oldPlayer) => oldPlayer.name === player?.name);
+			if (oldPlayer) updatePlayerPosition(playerObj, oldPlayer);
+		}
+		leaderboard.players.push(playerObj);
 	}
 	return leaderboard;
 };
@@ -241,12 +245,13 @@ const start = async () => {
 		"59 23 * * *",
 		function () {
 			if (settings.dev) return;
-
 			const playerHistoryData = [];
+
 			const date = new Date().toISOString();
 			cache.world.players.forEach((player) => {
 				if (player.missing) return;
-				playerHistoryData.push({
+				// Create new player history object
+				const playerObj = {
 					name: encodeURIComponent(player.name),
 					history: [
 						{
@@ -255,7 +260,12 @@ const start = async () => {
 							score: player.score,
 						},
 					],
-				});
+				};
+				// Only add match history if player has detailedData
+				if (Object.keys(player.detailData))
+					playerObj.history[0].matches =
+						player.detailData.wins + player.detailData.ties + player.detailData.losses;
+				playerHistoryData.push(playerObj);
 			});
 			updateHistory(playerHistoryData);
 		},
