@@ -171,6 +171,7 @@ const mainFetch = async (region, force) => {
 	dataValues[region] = lbData?.data;
 	updateFile("dataValues", dataValues);
 
+	if (lbData?.entries.length <= 1) return;
 	// Create new lb object and write it to a file and cache
 	const newData = await createNewLbObject(lbData?.entries, region);
 	updateFile(region, newData);

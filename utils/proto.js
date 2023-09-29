@@ -36,6 +36,12 @@ const parseRegion = (object, number) => {
 	}
 };
 
+const calcWinPercentage = (wins, ties, losses) => {
+	let rounded = Math.round((wins / (wins + ties + losses)) * 1000) / 10;
+	if (rounded === 100) return rounded;
+	return rounded.toFixed(1);
+};
+
 // decode varint from binary data
 function decodeVarint(bytes, offset) {
 	let result = 0;
@@ -130,8 +136,7 @@ const parseProto = (hex) => {
 					wins: matches.wins,
 					ties: matches.ties,
 					losses: matches.losses,
-					winpercentage:
-						Math.round((matches.wins / (matches.wins + matches.ties + matches.losses)) * 1000) / 10,
+					winpercentage: calcWinPercentage(matches.wins, matches.ties, matches.losses),
 					maps: {
 						ancient: mapValues[0],
 						nuke: mapValues[1],
