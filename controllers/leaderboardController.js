@@ -259,11 +259,13 @@ const start = async () => {
 							date,
 							rank: player.rank,
 							score: player.score,
-							matches:
-								player?.detailData?.wins + player?.detailData?.ties + player?.detailData?.losses,
 						},
 					],
 				};
+				// Only add match history if player has detailedData
+				if (Object.keys(player.detailData))
+					playerObj.history[0].matches =
+						player.detailData.wins + player.detailData.ties + player.detailData.losses;
 				playerHistoryData.push(playerObj);
 			});
 			updateHistory(playerHistoryData);
