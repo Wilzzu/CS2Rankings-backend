@@ -7,7 +7,7 @@ const historySchema = new Schema(
 			type: String,
 			required: true,
 		},
-		history: [{ date: Date, rank: Number, score: Number }],
+		history: [{ date: Date, rank: Number, score: Number, matches: Number }],
 	},
 	{ timestamps: true }
 );

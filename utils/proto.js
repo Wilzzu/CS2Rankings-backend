@@ -1,7 +1,4 @@
-// Credits:
-// https://github.com/6413
-// https://github.com/zer0k-z
-// https://github.com/BeepIsla
+// Huge thanks to https://github.com/6413 for helping with parsing the detailed data and https://github.com/zer0k-z https://github.com/BeepIsla for providing resources
 
 const protobuf = require("protobufjs");
 

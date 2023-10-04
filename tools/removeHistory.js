@@ -8,9 +8,10 @@ mongoose
 	.then((res) => removeHistory())
 	.catch((err) => console.log(err));
 
+// $lt to delete everything BEFORE a date, $gt to delete everything AFTER a date
 const removeHistory = async () => {
 	try {
-		const dateThreshold = new Date("2023-09-27T23:59:00.000Z");
+		const dateThreshold = new Date("2023-10-03T23:59:00.006+00:00");
 
 		const result = await History.updateMany(
 			{
