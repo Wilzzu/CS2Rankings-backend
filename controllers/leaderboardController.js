@@ -251,6 +251,10 @@ const start = async () => {
 			const date = new Date().toISOString();
 			cache.world.players.forEach((player) => {
 				if (player.missing) return;
+				if (playerHistoryData.some((e) => e.name === encodeURIComponent(player.name))) {
+					console.log("Ignoring duplicate player: " + encodeURIComponent(player.name));
+					return;
+				}
 				// Create new player history object
 				const playerObj = {
 					name: encodeURIComponent(player.name),

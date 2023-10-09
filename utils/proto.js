@@ -127,7 +127,6 @@ const parseProto = (hex) => {
 					losses: findTag(jsObject, 18),
 				};
 
-				// console.log(`Parsed ${hex[0]}${hex[1]}${hex[2]}${hex[3]}, ${parseRegion(jsObject, 21)}`);
 				// Create final return object
 				const final = {
 					wins: matches.wins,
