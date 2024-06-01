@@ -56,7 +56,6 @@ const fetchData = async (region) => {
 const updateFile = (file, data) => {
 	fs.writeFileSync(`./database/${file}.json`, JSON.stringify(data, null, 4), (err) => {
 		if (err) console.log(err);
-		console.log("updated file");
 	});
 };
 
@@ -181,11 +180,6 @@ const mainFetch = async (region, force) => {
 // @desc    Get region leaderboard
 // @route   GET /api/leaderboard/:season/:region
 const getLeaderboard = asyncHandler(async (req, res) => {
-	console.log(
-		"New request: " +
-			req.params.region +
-			` @ ${new Date().getUTCHours()}:${new Date().getUTCMinutes()}:${new Date().getUTCSeconds()}`
-	);
 	// Check for valid region
 	let region = req.params.region;
 	if (!settings.regions.includes(region))
@@ -232,7 +226,7 @@ const start = async () => {
 		await mainFetch(region, true);
 	}
 
-	console.log(`DEV MODE IS ${settings.dev ? "ON!!!" : "NOT ON!!!"}`);
+	if (settings.dev) console.log(`!!! Dev mode is on !!!`);
 
 	// Leaderboard updating
 	setInterval(async () => {
@@ -251,10 +245,8 @@ const start = async () => {
 			const date = new Date().toISOString();
 			cache.world.players.forEach((player) => {
 				if (player.missing) return;
-				if (playerHistoryData.some((e) => e.name === encodeURIComponent(player.name))) {
-					console.log("Ignoring duplicate player: " + encodeURIComponent(player.name));
-					return;
-				}
+				if (playerHistoryData.some((e) => e.name === encodeURIComponent(player.name))) return; // Ignore duplicates
+
 				// Create new player history object
 				const playerObj = {
 					name: encodeURIComponent(player.name),
@@ -266,6 +258,7 @@ const start = async () => {
 						},
 					],
 				};
+
 				// Only add match history if player has detailedData
 				if (Object.keys(player.detailData))
 					playerObj.history[0].matches =

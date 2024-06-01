@@ -1,8 +1,9 @@
 const History = require("../database/models/history");
 const mongoose = require("mongoose");
+const settings = require("../settings.json");
 require("dotenv").config();
 
-const dbURL = `mongodb+srv://wilzzu:${process.env.MONGOPASS}@rankings.7vlhij2.mongodb.net/playerdata?retryWrites=true&w=majority`;
+const dbURL = `${process.env.MONGODB_URI}playerdata?retryWrites=true&w=majority`;
 mongoose
 	.connect(dbURL)
 	.then((res) => removeHistory())
@@ -11,7 +12,7 @@ mongoose
 // $lt to delete everything BEFORE a date, $gt to delete everything AFTER a date
 const removeHistory = async () => {
 	try {
-		const dateThreshold = new Date("2023-10-03T23:59:00.006+00:00");
+		const dateThreshold = new Date(settings.historyDateThreshold);
 
 		const result = await History.updateMany(
 			{

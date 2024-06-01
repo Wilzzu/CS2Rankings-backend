@@ -9,10 +9,10 @@ const { getHistory } = require("./controllers/historyController");
 const port = process.env.PORT || 3000;
 const app = express();
 
-const dbURL = `mongodb+srv://wilzzu:${process.env.MONGOPASS}@rankings.7vlhij2.mongodb.net/playerdata?retryWrites=true&w=majority`;
+const dbURL = `${process.env.MONGODB_URI}playerdata?retryWrites=true&w=majority`;
 mongoose
 	.connect(dbURL)
-	.then((res) => console.log("Connected to database!"))
+	.then(() => console.log("Connected to database!"))
 	.catch((err) => console.log(err));
 
 app.use(cors());

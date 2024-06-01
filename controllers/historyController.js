@@ -13,7 +13,6 @@ const getHistory = expressAsyncHandler(async (req, res) => {
 
 	// Read old season player history from a file
 	if (settings.currentSeason !== req.params.season) {
-		console.log("Fetch old history for " + name);
 		fs.readFile(
 			`./database/oldSeasons/${req.params.season}/playerdata.json`,
 			"utf8",
@@ -48,7 +47,6 @@ const getHistory = expressAsyncHandler(async (req, res) => {
 		// Return from cache if player is already searched for
 		const findPlayer = cache.find((e) => e.name === name);
 		if (findPlayer) return res.status(200).json(findPlayer.data);
-		console.log("Fetch new history for " + name);
 
 		// Search player from database
 		History.findOne({ name })
@@ -67,7 +65,7 @@ const getHistory = expressAsyncHandler(async (req, res) => {
 const job = new CronJob(
 	"0 0 * * *",
 	function () {
-		console.log("Clear history cache");
+		console.log("Cleared history cache");
 		cache = [];
 	},
 	null,

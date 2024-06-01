@@ -12,5 +12,6 @@
 	],
 	"seasons": ["betaseason", "season1"],
 	"currentSeason": "season1",
-	"dev": false
+	"historyDateThreshold": "2023-10-03T23:59:00.006+00:00",
+	"dev": true
 }
