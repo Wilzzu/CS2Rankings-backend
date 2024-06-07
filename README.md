@@ -1,4 +1,6 @@
-# CS2Rankings Backend
+![Banner](https://i.imgur.com/hMWEXdz.png)
+
+<h1 align="center">CS2Rankings Backend</h1>
 
 This is the backend for [CS2Rankings](https://cs2rankings.com/), a website that shows live Counter-Strike 2 leaderboard rankings. This backend is responsible for fetching player data from the official Steam API and then parsing and storing that data in a database. The frontend then fetches this data from the database and displays it to the user.
 
