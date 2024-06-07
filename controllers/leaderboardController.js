@@ -61,13 +61,11 @@ const updateFile = (file, data) => {
 
 const updatePlayerPosition = (player, oldPlayer) => {
 	// If rank up
-	// && (player.rank <= 11 || player.score > oldPlayer.score) score changed or top 11
 	if (player.rank < oldPlayer.rank) {
 		player.position = "up";
 		player.lastUpdate = Date.now();
 	}
 	// If rank down
-	// && (player.rank <= 11 || player.score < oldPlayer.score) score changed or top 11
 	else if (player.rank > oldPlayer.rank) {
 		player.position = "down";
 		player.lastUpdate = Date.now();
@@ -165,7 +163,6 @@ const mainFetch = async (region, force) => {
 		if (!lbData?.entries) return;
 	}
 
-	// console.log("new data: " + region + " " + lbData?.data);
 	// Update regions data value
 	dataValues[region] = lbData?.data;
 	updateFile("dataValues", dataValues);

@@ -39,7 +39,7 @@ You can find the main repository with the frontend [here](https://github.com/Wil
 4. **Start the server:**
 
    ```
-    npm start
+    npm run start
    ```
 
 ## API Endpoints
