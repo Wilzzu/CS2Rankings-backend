@@ -2,7 +2,7 @@
 
 <h1 align="center">CS2Rankings Backend</h1>
 
-This is the backend for [CS2Rankings](https://cs2rankings.com/), a website that shows live Counter-Strike 2 leaderboard rankings. This backend is responsible for fetching player data from the official Steam API and then parsing and storing that data in a database. The frontend then fetches this data from the database and displays it to the user.
+This is the backend for [CS2Rankings](https://cs2rankings.com/), a React website that shows live Counter-Strike 2 leaderboard rankings. The backend is responsible for fetching player data from the official Steam API and then parsing and storing that data in a database. The frontend then fetches this data from the database and displays it to the user.
 
 You can find the main repository with the frontend [here](https://github.com/Wilzzu/CS2Rankings).
 
