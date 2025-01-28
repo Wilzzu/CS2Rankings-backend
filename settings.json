@@ -1,5 +1,5 @@
 {
-	"leaderboardurl": "https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/?lbname=official_leaderboard_premier",
+	"leaderboardurl": "https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1?format=json&lbname=official_leaderboard_premier",
 	"regions": [
 		"africa",
 		"asia",

@@ -5,8 +5,8 @@ const fs = require("fs");
 require("dotenv").config();
 
 /*
-    This script is used to archive player history data from current season's files to the season's history collection.
-    The script will only copy the players that are present in the final leaderboards of the old season.
+    This script is used to archive player history data from current/old season's files to the season's history collection.
+    The script will only copy the players that are present in the final leaderboards of the current/old seasons.
     This should be run when the season is changing.
 */
 
@@ -20,7 +20,7 @@ mongoose
 
 async function processFiles() {
 	try {
-		// Define the whitelist of files to process
+		// Only process the whitelisted files in a directory
 		const whitelist = [
 			"africa.json",
 			"asia.json",
@@ -30,15 +30,13 @@ async function processFiles() {
 			"northamerica.json",
 			"southamerica.json",
 		];
-
-		// Read all files in the directory
 		const files = await fs.promises.readdir(`./database/oldSeasons/${seasonName}/`);
 
-		// Filter files to include only those in the whitelist
+		// Filter to only include the whitelisted files
 		const filesToProcess = files.filter((file) => whitelist.includes(file));
 		console.log(`Found ${filesToProcess.length}/${whitelist.length} files to process!`);
 
-		// Process files sequentially
+		// Process region files
 		for (const file of filesToProcess) {
 			console.log("Starting file:", file);
 			const data = await fs.promises.readFile(
@@ -48,11 +46,10 @@ async function processFiles() {
 
 			const region = JSON.parse(data);
 
-			// Process each player in the file
+			// Find and copy players to the new collection
 			for (const [index, player] of region.players.entries()) {
 				if (player.missing) continue;
 
-				// Find and copy the player
 				const doc = await getHistoryModel(settings.currentSeason).findOne({
 					name: encodeURIComponent(player.name),
 				});
@@ -62,7 +59,6 @@ async function processFiles() {
 					continue;
 				}
 
-				// Copy the player to the new collection
 				const copyPlayerDoc = new (getHistoryModel(seasonName))(doc.toObject());
 				await copyPlayerDoc.save();
 
