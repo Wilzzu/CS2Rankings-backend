@@ -137,7 +137,7 @@ const parseProto = (hex) => {
 						ancient: mapValues[0],
 						nuke: mapValues[1],
 						dust_II: mapValues[2],
-						vertigo: mapValues[3],
+						train: mapValues[3],
 						mirage: mapValues[4],
 						inferno: mapValues[5],
 						anubis: mapValues[6],

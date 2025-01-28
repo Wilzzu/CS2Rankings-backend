@@ -12,5 +12,9 @@ const historySchema = new Schema(
 	{ timestamps: true }
 );
 
-const History = mongoose.model("History", historySchema);
-module.exports = History;
+function getHistoryModel(season) {
+	if (mongoose.models[season]) return mongoose.models[season];
+	return mongoose.model(season, historySchema, season);
+}
+
+module.exports = getHistoryModel;

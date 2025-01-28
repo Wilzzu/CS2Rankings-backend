@@ -1,4 +1,4 @@
-const History = require("../database/models/history");
+const getHistoryModel = require("../database/models/history");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
@@ -11,6 +11,7 @@ mongoose
 const removePlayers = async () => {
 	let removedAmount = 0;
 	try {
+		const History = getHistoryModel("seasonName");
 		const playersToRemove = await History.find({ history: { $size: 0 } });
 		console.log("Removing players, please wait...");
 		for (const player of playersToRemove) {

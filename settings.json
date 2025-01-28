@@ -1,5 +1,5 @@
 {
-	"leaderboardurl": "https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/?lbname=official_leaderboard_premier",
+	"leaderboardurl": "https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1?format=json&lbname=official_leaderboard_premier",
 	"regions": [
 		"africa",
 		"asia",
@@ -10,8 +10,8 @@
 		"southamerica",
 		"world"
 	],
-	"seasons": ["betaseason", "season1"],
-	"currentSeason": "season1",
+	"seasons": ["betaseason", "season1", "season2"],
+	"currentSeason": "season2",
 	"historyDateThreshold": "2023-10-03T23:59:00.006+00:00",
 	"dev": true
 }
