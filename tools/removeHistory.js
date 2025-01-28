@@ -1,4 +1,4 @@
-const History = require("../database/models/history");
+const getHistoryModel = require("../database/models/history");
 const mongoose = require("mongoose");
 const settings = require("../settings.json");
 require("dotenv").config();
@@ -14,7 +14,7 @@ const removeHistory = async () => {
 	try {
 		const dateThreshold = new Date(settings.historyDateThreshold);
 
-		const result = await History.updateMany(
+		const result = await getHistoryModel("seasonName").updateMany(
 			{
 				"history.date": { $lt: dateThreshold },
 			},

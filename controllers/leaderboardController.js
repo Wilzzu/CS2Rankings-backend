@@ -6,8 +6,7 @@ const dataValues = require("../database/dataValues.json"); // Data version and l
 const { v4: uuidv4 } = require("uuid");
 const CronJob = require("cron").CronJob;
 require("dotenv").config();
-const CryptoJS = require("crypto-js");
-const History = require("../database/models/history");
+const getHistoryModel = require("../database/models/history");
 const { proto } = require("../utils/proto");
 
 // Regions cache
@@ -22,18 +21,12 @@ const cache = {
 	world: {},
 };
 
-const fetchInterval = 30000;
+const FETCH_INTERVAL = 30000;
 
 const readOldSeasons = (res, season, region) => {
 	fs.readFile(`./database/oldSeasons/${season}/${region}.json`, "utf8", (err, data) => {
-		if (err) {
-			return res.status(404).json(`ERROR: failed to read data for "${season}" season!`);
-		}
-		const encryptData = CryptoJS.AES.encrypt(
-			JSON.stringify(JSON.parse(data)),
-			process.env.ENCRYPT
-		).toString();
-		res.status(200).json(encryptData);
+		if (err) return res.status(404).json(`ERROR: failed to read data for "${season}" season!`);
+		res.status(200).json(JSON.parse(data));
 	});
 };
 
@@ -48,7 +41,9 @@ const fetchData = async (region) => {
 			return null;
 		})
 		.catch((err) => {
-			console.log(err);
+			console.log(
+				`${settings.currentSeason}${region !== "world" ? `_${region}` : ""} | ${err.message}`
+			);
 			return null;
 		});
 };
@@ -112,6 +107,7 @@ const createNewLbObject = async (data, region) => {
 	};
 
 	// Create new player objects and push them to leaderboard
+	if (!data) return leaderboard;
 	for (const player of data) {
 		// Keep adding missing players until player is at correct position
 		while (player?.rank > leaderboard.players.length + 1) {
@@ -188,15 +184,8 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 	if (!cache[region]) return res.status(404).json(`ERROR: "${region}" has no data!`);
 
 	// Return cache or old season data
-	if (season !== settings.currentSeason) {
-		readOldSeasons(res, season, region);
-	} else {
-		const encryptData = CryptoJS.AES.encrypt(
-			JSON.stringify(cache[region]),
-			process.env.ENCRYPT
-		).toString();
-		res.status(200).json(encryptData);
-	}
+	if (season !== settings.currentSeason) readOldSeasons(res, season, region);
+	else res.status(200).json(cache[region]);
 });
 
 // Update player history
@@ -210,7 +199,7 @@ const updateHistory = async (players) => {
 			},
 		}));
 
-		await History.bulkWrite(bulkUpdateOperations);
+		await getHistoryModel(settings.currentSeason).bulkWrite(bulkUpdateOperations);
 		console.log(`Updated history for all players @ ${new Date().toUTCString()}`);
 	} catch (error) {
 		console.error(`Error updating players: ${error.message}`);
@@ -223,14 +212,14 @@ const start = async () => {
 		await mainFetch(region, true);
 	}
 
-	if (settings.dev) console.log(`!!! Dev mode is on !!!`);
+	if (settings.dev) console.log(`!!! DEV MODE IS ON !!!`);
 
 	// Leaderboard updating
 	setInterval(async () => {
 		for (const region of settings.regions) {
 			await mainFetch(region);
 		}
-	}, fetchInterval);
+	}, FETCH_INTERVAL);
 
 	// History updating 59 23 * * *
 	const job = new CronJob(

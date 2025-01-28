@@ -10,8 +10,8 @@
 		"southamerica",
 		"world"
 	],
-	"seasons": ["betaseason", "season1"],
-	"currentSeason": "season1",
+	"seasons": ["betaseason", "season1", "season2"],
+	"currentSeason": "season2",
 	"historyDateThreshold": "2023-10-03T23:59:00.006+00:00",
 	"dev": true
 }
