@@ -32,11 +32,10 @@ You can find the main repository with the frontend [here](https://github.com/Wil
 
    Rename the `.env.example` file to `.env` and fill in the variables:
 
-   | Variable    | Description                                                                                    |
-   | ----------- | ---------------------------------------------------------------------------------------------- |
-   | `PORT`      | Port number for the server.                                                                    |
-   | `MONGO_URI` | MongoDB connection URI found in `Database` > `Connect` > `Drivers` in your MongoDB project.    |
-   | `ENCRYPT`   | Random string used for encrypting API responses. Should be same for both frontend and backend. |
+   | Variable      | Description                                                                                 |
+   | ------------- | ------------------------------------------------------------------------------------------- |
+   | `PORT`        | Port number for the server.                                                                 |
+   | `MONGODB_URI` | MongoDB connection URI found in `Database` > `Connect` > `Drivers` in your MongoDB project. |
 
 4. **Start the server:**
 
