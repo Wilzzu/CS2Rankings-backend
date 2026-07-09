@@ -139,8 +139,8 @@ const parseProto = (hex) => {
 						dust_II: mapValues[2],
 						mirage: mapValues[3],
 						inferno: mapValues[4],
-						overpass: mapValues[5],
-						anubis: mapValues[6],
+						anubis: mapValues[5],
+						cache: mapValues[6],
 					},
 					region: parseRegion(jsObject, 21),
 				};
